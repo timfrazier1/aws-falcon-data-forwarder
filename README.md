@@ -51,6 +51,7 @@ Prepare a configuration file. (e.g. `myconfig.json` ) Please see a following sam
     "S3Prefix": "logs/",
     "S3Region": "ap-northeast-1",
     "SqsURL": "https://us-west-1.queue.amazonaws.com/xxxxxxxxxxxxxx/some-queue-name",
+    "FalconRegion": "ap-northeast-1",
     "SecretArn": "arn:aws:secretsmanager:ap-northeast-1:1234567890:secret:your-secret-name-4UqOs6"
 }
 ```
@@ -66,6 +67,7 @@ Prepare a configuration file. (e.g. `myconfig.json` ) Please see a following sam
   - `S3Prefix`: Prefix of S3 Key to save log data
   - `S3Regio`: AWS region of `S3Bucket`
   - `SqsURL`: SQS URL provided by CrowdStrike Falcon
+  - `FalconRegion`: AWS region of CrowdStrike Falcon S3 Bucket
   - `SecretArn`: ARN of the secret that you store AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 
 ### Deploy

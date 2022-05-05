@@ -12,6 +12,8 @@ Parameters:
     Type: String
   SqsURL:
     Type: String
+  FalconRegion:
+    Type: String
   SecretArn:
     Type: String
 
@@ -36,6 +38,8 @@ Resources:
             Ref: S3Region
           SQS_URL:
             Ref: SqsURL
+          FALCON_REGION:
+            Ref: FalconRegion
           SECRET_ARN:
             Ref: SecretArn
       Events:

@@ -60,7 +60,7 @@ func Handler(args Args) error {
 			logger.WithField("f", f).Info("forwarding")
 
 			src := S3Ptr{
-				Region: falconAwsRegion,
+				Region: args.falconRegion,
 				Bucket: msg.Bucket,
 				Key:    f.Path,
 				credential: &awsCredential{
@@ -90,8 +90,6 @@ func Handler(args Args) error {
 		forwardMessage)
 	return err
 }
-
-var falconAwsRegion = "us-west-1"
 
 func getSecretValues(secretArn string, values interface{}) error {
 	// sample: arn:aws:secretsmanager:ap-northeast-1:1234567890:secret:mytest
@@ -129,6 +127,7 @@ func BuildArgs() (Args, error) {
 		S3Prefix: os.Getenv("S3_PREFIX"),
 		S3Region: os.Getenv("S3_REGION"),
 		SqsURL:   os.Getenv("SQS_URL"),
+		falconRegion: os.Getenv("FALCON_REGION"),
 	}
 
 	err := getSecretValues(os.Getenv("SECRET_ARN"), &args)
@@ -144,6 +143,7 @@ type Args struct {
 	S3Prefix        string
 	S3Region        string
 	SqsURL          string
+	falconRegion	string
 	FalconAwsKey    string `json:"falcon_aws_key"`
 	FalconAwsSecret string `json:"falcon_aws_secret"`
 }

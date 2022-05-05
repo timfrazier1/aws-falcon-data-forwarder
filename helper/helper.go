@@ -68,6 +68,7 @@ func makeParameters() {
 		"S3Prefix",
 		"S3Region",
 		"SqsURL",
+		"FalconRegion",
 		"SecretArn",
 	}
 
