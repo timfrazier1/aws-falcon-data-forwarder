@@ -1,0 +1,12 @@
+storage_aws_external_id = "<STORAGE_AWS_EXTERNAL_ID>_from_describe_integration_in_Snowflake"
+# You should be able to run this initially with the dummy value shown below, but make sure to replace with your value and re-apply after building the Snowflake integration
+storage_aws_iam_user_arn = "arn:aws:iam::123136341234:user/ab3g-s-ohsw1234"
+# storage_aws_iam_user_arn = "<STORAGE_AWS_IAM_USER_ARN> from describe integration in Snowflake"
+
+# run terraform apply the first time with this line commented out, then after creating the pipe in Snowflake, substitute the SQS queue ARN below and re-run terraform apply
+# snowpipe_sqs_queue_arn = "<notification_channel> from describe pipe output in Snowflake"
+
+secret_map = {
+    falcon_aws_key = "<CROWDSTRIKE_PROVIDED_AWS_KEY_HERE>"
+    falcon_aws_secret = "<CROWDSTRIKE_PROVIDED_AWS_SECRET_HERE>"
+}
