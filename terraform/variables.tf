@@ -39,10 +39,6 @@ variable "storage_aws_iam_user_arn" {
 } 
 
 variable "secret_map" {
-  default = {
-    falcon_aws_key = "<insert_aws_key_here>"
-    falcon_aws_secret = "<insert_aws_secret_here>"
-  }
-
-  type = map(string)
+  type 		= map(string)
+  description 	= "The AWS credentials provided by Crowdstrike for access to their S3 bucket where FDR logs are stored."
 }
