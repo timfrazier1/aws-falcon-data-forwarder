@@ -8,7 +8,7 @@ This lambda function receives SQS message(s) from Data Replicator of CrowdStrike
 
 ![aws-falcon-data-forwarder-arch](https://user-images.githubusercontent.com/605953/43566627-0bc5ce66-966a-11e8-8e04-3c7a24b123b7.png)
 
-## Prerequisite
+## Prerequisites
 
 - Tools
   - go >= 1.11
@@ -23,6 +23,12 @@ This lambda function receives SQS message(s) from Data Replicator of CrowdStrike
     - secretsmanager:GetSecretValue
 
 Make sure that you need CrowdStrike Falcon and Data Replicator service.
+
+### Terraform option for prerequisites
+If you would prefer to use Terraform to build the prerequisite infrastructure, you can use the files in the 'terraform' folder to do this in an automated way. 
+-  You will need a `terraform.tfvars` file with your values. The easiest way is to make a copy of `terraform.tfvars.example` and name it `terraform.tfvars`, then modify the values. Some of the values you will need to fill in after you have set up the Snowflake integration and pipe. 
+- As long as you have terraform in your CLI environment, you can simply run `terraform init` to get the necessary providers, then `terraform apply` to build the infrastructure.  Once you get the necessary values from the Snowflake side, simply modify the `terraform.tfvars` file and re-run `terraform apply`. 
+- If you are unfamiliar with terraform, it is recommended to build the above prerequisite infrastructure manually using the AWS console.  
 
 ## Setup
 
