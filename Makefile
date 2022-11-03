@@ -2,6 +2,27 @@ TEMPLATE_FILE=template.yml
 OUTPUT_FILE=sam.yml
 FUNCTIONS=build/main
 
+init: verify-aws-profile-set terraform/main.tf	## Initialize enterprise owned S3 infrastructure.
+	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform init 
+
+plan: verify-aws-profile-set init		## Plan the changes to infra.
+	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform plan
+
+apply: verify-aws-profile-set init		## Apply the changes in plan.
+	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform apply 
+
+output: verify-aws-profile-set			## See the output.
+	@# AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
+	@jq '.RoleArn = $(shell terraform -chdir=terraform output RoleArn)' ./baseconfig.json > tmp 
+	@cat tmp > baseconfig.json
+	@jq '.CodeS3Bucket = $(shell terraform -chdir=terraform output CodeS3Bucket)' ./baseconfig.json > tmp
+	@cat tmp > baseconfig.json
+	@jq '.S3Bucket = $(shell terraform -chdir=terraform output S3Bucket)' ./baseconfig.json > tmp
+	@cat tmp > baseconfig.json
+	@jq '.SecretArn = $(shell terraform -chdir=terraform output SecretArn)' ./baseconfig.json > tmp
+	@cat tmp > baseconfig.json
+
+
 build/helper: helper/*.go
 	go build -o build/helper ./helper/
 
@@ -28,3 +49,8 @@ deploy: $(OUTPUT_FILE) build/helper
 		--template-file $(OUTPUT_FILE) \
 		--stack-name $(shell ./build/helper get StackName) \
 		--capabilities CAPABILITY_IAM $(shell ./build/helper mkparam)
+
+verify-aws-profile-set:
+ifndef AWS_PROFILE
+	$(error AWS_PROFILE is not defined. Make sure that you set your AWS profile and region.)
+endif
