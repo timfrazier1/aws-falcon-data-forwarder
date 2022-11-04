@@ -1,0 +1,72 @@
+terraform {
+  required_providers {
+    aws = ">= 3.0"
+    snowflake = {
+      source = "Snowflake-Labs/snowflake"
+      version = "~> 0.35"
+    }
+  }
+}
+
+
+provider "aws" {
+  region = "us-east-2"
+}
+
+provider "snowflake" {}
+
+variable "secret_map" {
+  type 		= map(string)
+  description 	= "The AWS credentials provided by Crowdstrike for access to their S3 bucket where FDR logs are stored."
+}
+
+module "avl-crwd-aws-infra" {
+  source = "./avl-crwd-aws-infra"
+  storage_aws_external_id = module.avl-snowflake-setup.snowflake_storage_integration_external_id
+  storage_aws_iam_user_arn = module.avl-snowflake-setup.snowflake_storage_integration_iam_user
+  # snowpipe_sqs_queue_arn = "arn:aws:sqs:us-west-2:123136348924:sf-snowpipe-AIDARZK37SL6JW7VMPFTC-IkZpkXtAmRZ3S_KaWAUmrA"
+  
+  secret_map = var.secret_map
+}
+
+
+module "avl-snowflake-setup" {
+  source = "./avl-snowflake-setup"
+
+  data_bucket_arns = [module.avl-crwd-aws-infra.S3BucketArn]
+  storage_integration_name = "example_test_int"
+  db_name = "anvilogic_demo"
+  iam_role_name = "example-test-role"
+  staging_schema_name = "external_staging_demo"
+  data_source_schema_name = "data_sources_demo"
+  task_warehouse_name = "anvilogic_tasks_demo"
+  detect_warehouse_name = "anvilogic_detect_demo"
+  avl_role_name = "avl_snowflake_splunk_demo"
+  avl_user_name = "avl_svcsplunk_demo"
+}
+/*
+module "avl-crwd-snowflake" {
+  source = "./avl-crwd-snowflake"
+  anvilogic_db_name = module.avl-snowflake-setup.snowflake_anvilogic_db_name
+
+}
+*/
+output "S3Bucket" {
+  value       = module.avl-crwd-aws-infra.S3Bucket
+  description = "CRWD Log bucket Name"
+}
+
+output "RoleArn" {
+  value       = module.avl-crwd-aws-infra.RoleArn
+  description = "Lambda IAM Role ARN"
+}
+
+output "CodeS3Bucket" {
+  value       = module.avl-crwd-aws-infra.CodeS3Bucket
+  description = "Lambda Code bucket Name"
+}
+
+output "SecretArn" {
+  value = module.avl-crwd-aws-infra.SecretArn
+  description = "Crowdstrike secrets ARN"
+}

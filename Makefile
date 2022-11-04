@@ -11,19 +11,22 @@ plan: verify-aws-profile-set init		## Plan the changes to infra.
 apply: verify-aws-profile-set init		## Apply the changes in plan.
 	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform apply 
 
-output: verify-aws-profile-set			## See the output.
+output: verify-aws-profile-set apply		## See the output and put into the newconfig file.
 	@# AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
 	@jq '.RoleArn = $(shell terraform -chdir=terraform output RoleArn)' ./baseconfig.json > tmp 
-	@cat tmp > baseconfig.json
-	@jq '.CodeS3Bucket = $(shell terraform -chdir=terraform output CodeS3Bucket)' ./baseconfig.json > tmp
-	@cat tmp > baseconfig.json
-	@jq '.S3Bucket = $(shell terraform -chdir=terraform output S3Bucket)' ./baseconfig.json > tmp
-	@cat tmp > baseconfig.json
-	@jq '.SecretArn = $(shell terraform -chdir=terraform output SecretArn)' ./baseconfig.json > tmp
-	@cat tmp > baseconfig.json
+	@cat tmp > newconfig.json
+	@jq '.CodeS3Bucket = $(shell terraform -chdir=terraform output CodeS3Bucket)' ./newconfig.json > tmp
+	@cat tmp > newconfig.json
+	@jq '.S3Bucket = $(shell terraform -chdir=terraform output S3Bucket)' ./newconfig.json > tmp
+	@cat tmp > newconfig.json
+	@jq '.SecretArn = $(shell terraform -chdir=terraform output SecretArn)' ./newconfig.json > tmp
+	@cat tmp > newconfig.json
 
 
-build/helper: helper/*.go
+destroy: verify-aws-profile-set 	## Destroy Infrastructure built with Terraform.
+	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform destroy
+
+build/helper: helper/*.go output
 	go build -o build/helper ./helper/
 
 build/main: ./*.go
@@ -35,7 +38,7 @@ clean:
 test:
 	go test -v ./lib/
 
-sam.yml: $(TEMPLATE_FILE) $(FUNCTIONS) build/helper
+sam.yml: $(TEMPLATE_FILE) $(FUNCTIONS) build/helper 
 	aws cloudformation package \
 		--region $(shell ./build/helper get Region) \
 		--template-file $(TEMPLATE_FILE) \
