@@ -21,7 +21,7 @@ output: verify-aws-profile-set apply		## See the output and put into the newconf
 	@cat tmp > newconfig.json
 	@jq '.SecretArn = $(shell terraform -chdir=terraform output SecretArn)' ./newconfig.json > tmp
 	@cat tmp > newconfig.json
-
+	@rm tmp
 
 destroy: verify-aws-profile-set 	## Destroy Infrastructure built with Terraform.
 	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform destroy

@@ -43,3 +43,45 @@ variable "task_warehouse_name" {
   type        = string
   description = "Name of existing Task Warehouse"
 }
+
+variable "processrollup_task_schedule" {
+  type        = string
+  default = "using cron */10 * * * * America/Los_Angeles"
+  description = "Cron Schedule for processrollup task"
+}
+
+variable "asset_task_schedule" {
+  type        = string
+  default = "using cron */10 * * * * America/Los_Angeles"
+  description = "Cron Schedule for asset task"
+}
+
+variable "identity_task_schedule" {
+  type        = string
+  default = "using cron */10 * * * * America/Los_Angeles"
+  description = "Cron Schedule for identity task"
+}
+
+variable "processrollup_task_enabled" {
+  type        = bool
+  default = false
+  description = "Whether to enable the processrollup task"
+}
+
+variable "asset_task_enabled" {
+  type        = bool
+  default = false
+  description = "Whether to enable the asset task"
+}
+
+variable "identity_task_enabled" {
+  type        = bool
+  default = false
+  description = "Whether to enable the identity task"
+}
+
+variable "false_value" {
+  type        = bool
+  default = false
+  description = "Used for ERROR_ON_NONDETERMINISTIC_MERGE"
+}

@@ -432,8 +432,13 @@ resource "snowflake_stage" "crowdstrike_fdr_stage" {
   storage_integration = var.s3_integration_name
 }
 
+resource "time_sleep" "stage_to_pipe" {
+  create_duration = "10s"
+}
+
 resource "snowflake_pipe" "crowdstrike_fdr_pipe" {
   provider = snowflake.account_admin
+  depends_on = [time_sleep.stage_to_pipe]
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   name     = "CROWDSTRIKE_FDR_PIPE"
@@ -489,7 +494,8 @@ resource "snowflake_task" "crowdstrike_fdr_task_processrollup" {
   warehouse = var.task_warehouse_name
 
   name          = "CROWDSTRIKE_FDR_TASK_PROCESSROLLUP"
-  schedule      = "using cron */10 * * * * America/Los_Angeles"
+  schedule      = var.processrollup_task_schedule
+  enabled       = var.processrollup_task_enabled
   sql_statement = <<EOT
     insert into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_processrollup.name} (
       insert_time, raw, hash_raw, event_time, command_line, config_build, config_state_hash, effective_transmission_class, entitlements, 
@@ -540,8 +546,6 @@ resource "snowflake_task" "crowdstrike_fdr_task_processrollup" {
     from ${var.anvilogic_db_name}.${var.staging_schema_name}.${snowflake_stream.crowdstrike_fdr_stream_processrollup.name}
     where event_simple_name = 'ProcessRollup2';
     EOT
-
-  enabled              = false
 }
 
 resource "snowflake_task" "crowdstrike_fdr_task_identity" {
@@ -552,8 +556,12 @@ resource "snowflake_task" "crowdstrike_fdr_task_identity" {
   schema   = var.staging_schema_name
   warehouse = var.task_warehouse_name
 
+  # session_parameters = {"ERROR_ON_NONDETERMINISTIC_MERGE" : "false"}
+
   name          = "CROWDSTRIKE_FDR_TASK_IDENTITY"
-  schedule      = "using cron */10 * * * * America/Los_Angeles"
+  schedule      = var.identity_task_schedule
+  enabled       = var.identity_task_enabled
+  
   sql_statement = <<EOT
     merge into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_identity.name} as identity
     using (
@@ -578,8 +586,6 @@ resource "snowflake_task" "crowdstrike_fdr_task_identity" {
         values
         ( stage.insert_time, stage.hash, stage.user_is_admin, stage.username, stage.user_principal, stage.uid, stage.aid, stage.event_simple_name );
     EOT
-
-  enabled              = false
 }
 
 resource "snowflake_task" "crowdstrike_fdr_task_asset" {
@@ -590,9 +596,12 @@ resource "snowflake_task" "crowdstrike_fdr_task_asset" {
   schema   = var.staging_schema_name
   warehouse = var.task_warehouse_name
 
+  # session_parameters = {"error_on_nondeterministic_merge" : var.false_value }
 
   name          = "CROWDSTRIKE_FDR_TASK_ASSET"
-  schedule      = "using cron */10 * * * * America/Los_Angeles"
+  schedule      = var.asset_task_schedule
+  enabled       = var.asset_task_enabled
+
   sql_statement = <<EOT
     merge into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_asset.name} as asset
     using (
@@ -633,6 +642,4 @@ resource "snowflake_task" "crowdstrike_fdr_task_asset" {
         values
         ( stage.insert_time, stage.hash, stage.computer_name, stage.machine_domain, stage.ou, stage.site_name, stage.falcon_grouping_tags, stage.city, stage.country, stage.product_type, stage.system_manufacturer, stage.system_product_name, stage.aid, stage.aip, stage.platform ); 
   EOT
-
-  enabled              = false
 }
