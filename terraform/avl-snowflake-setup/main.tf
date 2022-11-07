@@ -14,19 +14,19 @@ locals {
 provider "snowflake" {
   alias = "sys_admin"
   role  = "SYSADMIN"
-  region = "us-east-2.aws"
+  region = var.snowflake_region
 }
 
 provider "snowflake" {
   alias = "security_admin"
   role  = "SECURITYADMIN"
-  region = "us-east-2.aws"
+  region = var.snowflake_region
 }
 
 provider "snowflake" {
   alias = "account_admin"
   role  = "ACCOUNTADMIN"
-  region = "us-east-2.aws"
+  region = var.snowflake_region
 }
 
 resource "snowflake_database" "anvilogic_db" {

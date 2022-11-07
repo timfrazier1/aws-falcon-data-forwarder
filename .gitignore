@@ -2,6 +2,10 @@ build
 config
 vendor
 test.json
-terraform/*.tfstate*
-terraform/*.terraform*
-terraform/terraform.tfvars
+*.tfstate
+*.tfstate.*
+*/.terraform/*
+*/*/.terraform/*
+*.tfvars
+*.terraform.lock.hcl
+

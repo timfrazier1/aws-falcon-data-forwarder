@@ -44,13 +44,24 @@ module "avl-snowflake-setup" {
   avl_role_name = "avl_snowflake_splunk_demo"
   avl_user_name = "avl_svcsplunk_demo"
 }
-/*
+
 module "avl-crwd-snowflake" {
   source = "./avl-crwd-snowflake"
-  anvilogic_db_name = module.avl-snowflake-setup.snowflake_anvilogic_db_name
+  anvilogic_db_name       = module.avl-snowflake-setup.snowflake_anvilogic_db_name
+  staging_schema_name    = module.avl-snowflake-setup.snowflake_anvilogic_staging_schema_name
+  data_source_schema_name = module.avl-snowflake-setup.snowflake_anvilogic_data_source_schema_name
+  avl_role_name = module.avl-snowflake-setup.snowflake_anvilogic_role_name
+  s3_integration_name = module.avl-snowflake-setup.s3_storage_integration_name
+  crwd_log_bucket_name = module.avl-crwd-aws-infra.S3Bucket
+  task_warehouse_name = module.avl-snowflake-setup.task_warehouse_name
 
 }
-*/
+
+output "Snowpipe_SQS" {
+  value = module.avl-crwd-snowflake.snowflake_pipe_crowdstrike_fdr_pipe_sqs
+  description = "SQS Queue for Snowpipe"
+}
+
 output "S3Bucket" {
   value       = module.avl-crwd-aws-infra.S3Bucket
   description = "CRWD Log bucket Name"

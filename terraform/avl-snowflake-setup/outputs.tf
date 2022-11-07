@@ -25,3 +25,15 @@ output "snowflake_anvilogic_staging_schema_name" {
 output "snowflake_anvilogic_data_source_schema_name" {
     value = snowflake_schema.data_source_schema.name
 }
+
+output "snowflake_anvilogic_role_name" {
+    value = snowflake_role.avl_role.name
+}
+
+output "s3_storage_integration_name" {
+    value = snowflake_storage_integration.s3_integration.name
+}
+
+output "task_warehouse_name" {
+    value = snowflake_warehouse.task_warehouse.name
+}

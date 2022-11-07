@@ -1,13 +1,18 @@
+variable "snowflake_region" {
+  type        = string
+  default     = "us-east-2.aws"
+  description = "Snowflake Region for connecting to Snowflake account"
+}
 
 variable "db_name" {
   type        = string
-  default     = "anvilogic"
+  default     = "ANVILOGIC"
   description = "Database name for Anvilogic to use"
 }
 
 variable "iam_role_name" {
   type        = string
-  default     = "anvilogic"
+  default     = "avl-snowflake-storage-role"
   description = "Name for the IAM role for Snowflake to use for S3 Integration"
 }
 
@@ -19,19 +24,19 @@ variable "tags" {
 
 variable "staging_schema_name" {
   type        = string
-  default     = "external_staging"
+  default     = "EXTERNAL_STAGING"
   description = "Name to use for External Staging Schema"
 }
 
 variable "data_source_schema_name" {
   type        = string
-  default     = "data_sources"
+  default     = "DATA_SOURCES"
   description = "Name to use for Data Source Schema"
 }
 
 variable "task_warehouse_name" {
   type        = string
-  default     = "anvilogic_tasks"
+  default     = "ANVILOGIC_TASKS"
   description = "Name to use for Task Warehouse"
 }
 
@@ -43,7 +48,7 @@ variable "task_warehouse_size" {
 
 variable "detect_warehouse_name" {
   type        = string
-  default     = "anvilogic_detect"
+  default     = "ANVILOGIC_DETECT"
   description = "Name to use for Detect Warehouse"
 }
 
@@ -55,19 +60,19 @@ variable "detect_warehouse_size" {
 
 variable "avl_role_name" {
   type        = string
-  default     = "avl_snowflake_splunk"
+  default     = "AVL_SNOWFLAKE_SPLUNK"
   description = "Name to use for Anvilogic Connection Role"
 }
 
 variable "avl_user_name" {
   type        = string
-  default     = "avl_svcsplunk"
+  default     = "AVL_SVCSPLUNK"
   description = "Name to use for Anvilogic Connection User"
 }
 
 variable "storage_integration_name" {
   type        = string
-  default     = "s3_int"
+  default     = "AVL_S3_INT"
   description = "Name to use for S3 Storage Integration"
 }
 
