@@ -43,7 +43,7 @@ SELECT current_account() as YOUR_ACCOUNT_LOCATOR, current_region() as YOUR_SNOWF
 - Look for the Account Locator and REGION ID in your output and use those values to fill out the file `snow.env` in the root of this repo.  Make sure you use the [Region reference table](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#region-ids) to find the right region identifier to use. 
 - Run `source snow.env` to bring those variables into your environment
 - Update the `example_config.json` file with your Crowdstrike provided SQS queue and the appropriate regions. Move/copy `example_config.json` to a file named `baseconfig.json`
-- Rename `example_main.tf.example` to `main.tf` and substitute your Crowdstrike provided access key and secret key into the `secret_map` variable
+- Rename `terraform/example_main.tf.example` to `terraform/main.tf` and substitute your Crowdstrike provided access key and secret key into the `secret_map` variable
 
 - Run `env AWS_PROFILE=default FORWARDER_CONFIG=newconfig.json make deploy` and type `yes` when prompted to create infrastructure
 

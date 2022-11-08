@@ -44,6 +44,13 @@ if ! type openssl 2>&1; then
     sudo yum install openssl -y
 else
     echo "-> Openssl is already installed!"
+fi
+
+if ! type go 2>&1; then
+    sudo yum install golang -y
+else
+    echo "-> Go is already installed!"
+fi
 
 # Create ~/.ssh directory
 if [ ! -d "$HOME/.ssh" ]; then
@@ -56,14 +63,10 @@ if [ ! -d "$HOME/.ssh" ]; then
     echo -e "\nTo re-display this key, just type: cat ~/.ssh/snowflake_tf_snow_key.pub\n"
 else
     echo "-> SSH keys already generated!"
+    echo -e "\nCopy this SSH Public Key minus the top and bottom banners when creating Snowflake user: \n"
+    cat $HOME/.ssh/snowflake_tf_snow_key.pub
+    echo -e "\nTo re-display this key, just type: cat ~/.ssh/snowflake_tf_snow_key.pub\n"
 fi
-
-
-if ! type go 2>&1; then
-    sudo yum install golang -y
-else
-    echo "-> Go is already installed!"
-
 
 echo ""
 echo "Your shell is almost ready. Type 'exit' then hit enter before running any further commands. Open the Cloud Shell again and the environment will be ready for use!"
