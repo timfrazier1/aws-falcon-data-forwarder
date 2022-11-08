@@ -421,8 +421,14 @@ resource "snowflake_file_format" "fdr_stage_format" {
   binary_format = "HEX"
 }
 
+resource "time_sleep" "format_to_stage" {
+  depends_on = [snowflake_file_format.fdr_stage_format]
+  create_duration = "10s"
+}
+
 resource "snowflake_stage" "crowdstrike_fdr_stage" {
   provider = snowflake.account_admin
+  depends_on = [time_sleep.stage_to_pipe]
   name        = "CROWDSTRIKE_FDR_STAGE"
   url         = "s3://${var.crwd_log_bucket_name}/logs"
   database    = var.anvilogic_db_name
@@ -433,6 +439,7 @@ resource "snowflake_stage" "crowdstrike_fdr_stage" {
 }
 
 resource "time_sleep" "stage_to_pipe" {
+  depends_on = [ snowflake_stage.crowdstrike_fdr_stage ]
   create_duration = "10s"
 }
 
