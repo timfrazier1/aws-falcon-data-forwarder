@@ -2,17 +2,17 @@ TEMPLATE_FILE=template.yml
 OUTPUT_FILE=sam.yml
 FUNCTIONS=build/main
 
-init: verify-aws-profile-set terraform/main.tf	## Initialize enterprise owned S3 infrastructure.
-	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform init 
+init: terraform/main.tf	## Initialize enterprise owned S3 infrastructure.
+	terraform -chdir=terraform init 
 
-plan: verify-aws-profile-set init		## Plan the changes to infra.
-	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform plan
+plan: init		## Plan the changes to infra.
+	terraform -chdir=terraform plan
 
-apply: verify-aws-profile-set init		## Apply the changes in plan.
-	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform apply 
+apply: init		## Apply the changes in plan.
+	terraform -chdir=terraform apply 
 
-output: verify-aws-profile-set apply		## See the output and put into the newconfig file.
-	@# AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
+
+output: 		## See the output and put into the newconfig file.  ## AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
 	@jq '.RoleArn = $(shell terraform -chdir=terraform output RoleArn)' ./baseconfig.json > tmp 
 	@cat tmp > newconfig.json
 	@jq '.CodeS3Bucket = $(shell terraform -chdir=terraform output CodeS3Bucket)' ./newconfig.json > tmp
@@ -23,8 +23,8 @@ output: verify-aws-profile-set apply		## See the output and put into the newconf
 	@cat tmp > newconfig.json
 	@rm tmp
 
-destroy: verify-aws-profile-set 	## Destroy Infrastructure built with Terraform.
-	AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform destroy
+destroy: 	## Destroy Infrastructure built with Terraform.
+	terraform -chdir=terraform destroy
 
 build/helper: helper/*.go output
 	go build -o build/helper ./helper/

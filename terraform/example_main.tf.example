@@ -35,7 +35,7 @@ module "avl-snowflake-setup" {
   data_bucket_arns = [module.avl-crwd-aws-infra.S3BucketArn]
   storage_integration_name = "EXAMPLE_TEST_INT"
   db_name = "ANVILOGIC_DEMO"
-  iam_role_name = "EXAMPLE-TEST-ROLE"
+  # iam_role_name = "example-snowflake-integration-test-role"
   staging_schema_name = "EXTERNAL_STAGING_DEMO"
   data_source_schema_name = "DATA_SOURCES_DEMO"
   task_warehouse_name = "ANVILOGIC_TASKS_DEMO"
@@ -55,6 +55,12 @@ module "avl-crwd-snowflake" {
   s3_integration_name = module.avl-snowflake-setup.s3_storage_integration_name
   crwd_log_bucket_name = module.avl-crwd-aws-infra.S3Bucket
   task_warehouse_name = module.avl-snowflake-setup.task_warehouse_name
+  processrollup_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  asset_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  identity_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  processrollup_task_enabled = true
+  asset_task_enabled = true
+  identity_task_enabled = true
 }
 
 output "Snowpipe_SQS" {

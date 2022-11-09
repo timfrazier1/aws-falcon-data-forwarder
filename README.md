@@ -44,8 +44,9 @@ SELECT current_account() as YOUR_ACCOUNT_LOCATOR, current_region() as YOUR_SNOWF
 - Run `source snow.env` to bring those variables into your environment
 - Update the `example_config.json` file with your Crowdstrike provided SQS queue and the appropriate regions. Move/copy `example_config.json` to a file named `baseconfig.json`
 - Rename `terraform/example_main.tf.example` to `terraform/main.tf` and substitute your Crowdstrike provided access key and secret key into the `secret_map` variable
-
-- Run `env AWS_PROFILE=default FORWARDER_CONFIG=newconfig.json make deploy` and type `yes` when prompted to create infrastructure
+- Run `env FORWARDER_CONFIG=newconfig.json make deploy` and type `yes` when prompted to create infrastructure
+- After the first run, look for the output called `Snowpipe_SQS`.  Copy the value for this ARN and paste it into your `terraform/main.tf` file for the variable `snowpipe_sqs_queue_arn` and uncomment that line. 
+- Re-run terraform apply with this command: `terraform -chdir=terraform apply`
 
 
 
