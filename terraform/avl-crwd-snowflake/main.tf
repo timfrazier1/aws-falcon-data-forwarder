@@ -1,23 +1,6 @@
-provider "snowflake" {
-  alias = "sys_admin"
-  role  = "SYSADMIN"
-  region = var.snowflake_region
-}
-
-provider "snowflake" {
-  alias = "security_admin"
-  role  = "SECURITYADMIN"
-  region = var.snowflake_region
-}
-
-provider "snowflake" {
-  alias = "account_admin"
-  role  = "ACCOUNTADMIN"
-  region = var.snowflake_region
-}
 
 resource "snowflake_table" "crowdstrike_fdr" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database            = var.anvilogic_db_name
   schema              = var.staging_schema_name
   name                = "CROWDSTRIKE_FDR"
@@ -35,7 +18,7 @@ resource "snowflake_table" "crowdstrike_fdr" {
 }
 
 resource "snowflake_table" "crowdstrike_fdr_processrollup" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database            = var.anvilogic_db_name
   schema              = var.data_source_schema_name
   name                = "CROWDSTRIKE_FDR_PROCESSROLLUP"
@@ -246,7 +229,7 @@ resource "snowflake_table" "crowdstrike_fdr_processrollup" {
 }
 
 resource "snowflake_table" "crowdstrike_fdr_identity" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database            = var.anvilogic_db_name
   schema              = var.data_source_schema_name
   name                = "CROWDSTRIKE_FDR_IDENTITY"
@@ -294,7 +277,7 @@ resource "snowflake_table" "crowdstrike_fdr_identity" {
 }
 
 resource "snowflake_table" "crowdstrike_fdr_asset" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database            = var.anvilogic_db_name
   schema              = var.data_source_schema_name
   name                = "CROWDSTRIKE_FDR_ASSET"
@@ -409,7 +392,7 @@ resource "snowflake_table_grant" "asset_grant" {
 }
 
 resource "snowflake_file_format" "fdr_stage_format" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   name        = "FDR_STAGE_FORMAT"
   database    = var.anvilogic_db_name
   schema      = var.staging_schema_name
@@ -423,17 +406,17 @@ resource "snowflake_file_format" "fdr_stage_format" {
 
 resource "time_sleep" "format_to_stage" {
   depends_on = [snowflake_file_format.fdr_stage_format]
-  create_duration = "10s"
+  create_duration = "5s"
 }
 
 resource "snowflake_stage" "crowdstrike_fdr_stage" {
   provider = snowflake.account_admin
-  depends_on = [time_sleep.stage_to_pipe]
+  depends_on = [time_sleep.format_to_stage]
   name        = "CROWDSTRIKE_FDR_STAGE"
   url         = "s3://${var.crwd_log_bucket_name}/logs"
   database    = var.anvilogic_db_name
   schema      = var.staging_schema_name
-  # file_format = snowflake_file_format.fdr_stage_format.id
+
   file_format = "FORMAT_NAME = ${var.anvilogic_db_name}.${var.staging_schema_name}.FDR_STAGE_FORMAT"
   storage_integration = var.s3_integration_name
 }
@@ -463,7 +446,7 @@ resource "snowflake_pipe" "crowdstrike_fdr_pipe" {
 }
 
 resource "snowflake_stream" "crowdstrike_fdr_stream_processrollup" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   name     = "CROWDSTRIKE_FDR_STREAM_PROCESSROLLUP"
@@ -473,7 +456,7 @@ resource "snowflake_stream" "crowdstrike_fdr_stream_processrollup" {
 }
 
 resource "snowflake_stream" "crowdstrike_fdr_stream_identity" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   name     = "CROWDSTRIKE_FDR_STREAM_IDENTITY"
@@ -483,7 +466,7 @@ resource "snowflake_stream" "crowdstrike_fdr_stream_identity" {
 }
 
 resource "snowflake_stream" "crowdstrike_fdr_stream_asset" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   name     = "CROWDSTRIKE_FDR_STREAM_ASSET"
@@ -494,15 +477,15 @@ resource "snowflake_stream" "crowdstrike_fdr_stream_asset" {
 
 resource "snowflake_task" "crowdstrike_fdr_task_processrollup" {
   comment = "Task for processing processrollup logs. Created by Anvilogic via Terraform."
-
-  provider = snowflake.sys_admin
+  depends_on = [time_sleep.stage_to_pipe]
+  provider = snowflake.account_admin
+  
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   warehouse = var.task_warehouse_name
 
   name          = "CROWDSTRIKE_FDR_TASK_PROCESSROLLUP"
   schedule      = var.processrollup_task_schedule
-  enabled       = var.processrollup_task_enabled
   sql_statement = <<EOT
     insert into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_processrollup.name} (
       insert_time, raw, hash_raw, event_time, command_line, config_build, config_state_hash, effective_transmission_class, entitlements, 
@@ -553,12 +536,14 @@ resource "snowflake_task" "crowdstrike_fdr_task_processrollup" {
     from ${var.anvilogic_db_name}.${var.staging_schema_name}.${snowflake_stream.crowdstrike_fdr_stream_processrollup.name}
     where event_simple_name = 'ProcessRollup2';
     EOT
+  enabled       = var.tasks_enabled
 }
 
 resource "snowflake_task" "crowdstrike_fdr_task_identity" {
   comment = "Task for processing FDR identity logs. Created by Anvilogic via Terraform."
+  depends_on = [time_sleep.stage_to_pipe]
+  provider = snowflake.account_admin
 
-  provider = snowflake.sys_admin
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   warehouse = var.task_warehouse_name
@@ -567,7 +552,7 @@ resource "snowflake_task" "crowdstrike_fdr_task_identity" {
 
   name          = "CROWDSTRIKE_FDR_TASK_IDENTITY"
   schedule      = var.identity_task_schedule
-  enabled       = var.identity_task_enabled
+  enabled       = var.tasks_enabled
   
   sql_statement = <<EOT
     merge into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_identity.name} as identity
@@ -597,8 +582,9 @@ resource "snowflake_task" "crowdstrike_fdr_task_identity" {
 
 resource "snowflake_task" "crowdstrike_fdr_task_asset" {
   comment = "Task for processing FDR asset logs. Created by Anvilogic via Terraform."
+  depends_on = [time_sleep.stage_to_pipe]
+  provider = snowflake.account_admin
 
-  provider = snowflake.sys_admin
   database = var.anvilogic_db_name
   schema   = var.staging_schema_name
   warehouse = var.task_warehouse_name
@@ -607,7 +593,6 @@ resource "snowflake_task" "crowdstrike_fdr_task_asset" {
 
   name          = "CROWDSTRIKE_FDR_TASK_ASSET"
   schedule      = var.asset_task_schedule
-  enabled       = var.asset_task_enabled
 
   sql_statement = <<EOT
     merge into ${var.anvilogic_db_name}.${var.data_source_schema_name}.${snowflake_table.crowdstrike_fdr_asset.name} as asset
@@ -649,4 +634,6 @@ resource "snowflake_task" "crowdstrike_fdr_task_asset" {
         values
         ( stage.insert_time, stage.hash, stage.computer_name, stage.machine_domain, stage.ou, stage.site_name, stage.falcon_grouping_tags, stage.city, stage.country, stage.product_type, stage.system_manufacturer, stage.system_product_name, stage.aid, stage.aip, stage.platform ); 
   EOT
+
+  enabled       = var.tasks_enabled
 }

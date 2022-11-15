@@ -12,7 +12,7 @@ variable "db_name" {
 
 variable "iam_role_name" {
   type        = string
-  default     = "avl-snowflake-storage-role"
+  default = ""
   description = "Name for the IAM role for Snowflake to use for S3 Integration"
 }
 

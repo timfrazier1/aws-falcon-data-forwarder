@@ -21,7 +21,9 @@ The remainder of the architecture consists of AWS and Snowflake infrastructure a
 
 ## Installing in AWS Cloud Shell
 
-- Type in AWS Cloud Shell: `curl https://raw.githubusercontent.com/timfrazier1/aws-falcon-data-forwarder/snow-terraform/cloudshell_setup.sh | bash`
+- Clone this repo to your Cloudshell home directory: `git clone https://github.com/timfrazier1/aws-falcon-data-forwarder.git `
+
+- Run the setup script: `./cloudshell_setup.sh `
 
 - Substitute your public key from the above script into the commands below and run in your Snowflake environment: 
 

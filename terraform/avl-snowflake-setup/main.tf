@@ -3,7 +3,7 @@ data "aws_region" "current" {}
 
 locals {
   db_name 		= length(var.db_name) > 0 ? var.db_name : "anvilogic"
-  iam_role_name = length(var.iam_role_name) > 0 ? var.iam_role_name : "Snowflake-s3-integration-role-${random_id.uniq.hex}"
+  iam_role_name = length(var.iam_role_name) > 0 ? var.iam_role_name : "avl-snowflake-s3-integration-role-${random_id.uniq.hex}"
   account_id = data.aws_caller_identity.current.account_id
   aws_region = data.aws_region.current.name
   pipeline_bucket_ids = [
@@ -11,31 +11,13 @@ locals {
   ]
   }
 
-provider "snowflake" {
-  alias = "sys_admin"
-  role  = "SYSADMIN"
-  region = var.snowflake_region
-}
-
-provider "snowflake" {
-  alias = "security_admin"
-  role  = "SECURITYADMIN"
-  region = var.snowflake_region
-}
-
-provider "snowflake" {
-  alias = "account_admin"
-  role  = "ACCOUNTADMIN"
-  region = var.snowflake_region
-}
-
 resource "snowflake_database" "anvilogic_db" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   name     = var.db_name
 }
 
 resource "snowflake_warehouse" "task_warehouse" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   name           = var.task_warehouse_name
   warehouse_size = var.task_warehouse_size
 
@@ -45,7 +27,7 @@ resource "snowflake_warehouse" "task_warehouse" {
 }
 
 resource "snowflake_warehouse" "detect_warehouse" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   name           = var.detect_warehouse_name
   warehouse_size = var.detect_warehouse_size
 
@@ -55,14 +37,14 @@ resource "snowflake_warehouse" "detect_warehouse" {
 }
 
 resource "snowflake_schema" "staging_schema" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database   = snowflake_database.anvilogic_db.name
   name       = var.staging_schema_name
   is_managed = false
 }
 
 resource "snowflake_schema" "data_source_schema" {
-  provider = snowflake.sys_admin
+  provider = snowflake.account_admin
   database   = snowflake_database.anvilogic_db.name
   name       = var.data_source_schema_name
   is_managed = false
@@ -127,6 +109,13 @@ resource "snowflake_warehouse_grant" "detect_warehouse_grant" {
   with_grant_option = false
 }
 
+resource "snowflake_warehouse_grant" "task_warehouse_grant" {
+  provider          = snowflake.security_admin
+  warehouse_name    = snowflake_warehouse.task_warehouse.name
+  privilege         = "USAGE"
+  roles             = [snowflake_role.avl_role.name]
+  with_grant_option = false
+}
 
 resource "random_id" "uniq" {
   byte_length = 4
@@ -192,8 +181,6 @@ data "aws_iam_policy_document" "snowflake_storage_integration_access_policy" {
 
 
 }
-
-
 
 resource "aws_iam_role" "snowflake_storage_integration_iam_role" {
   name               = local.iam_role_name

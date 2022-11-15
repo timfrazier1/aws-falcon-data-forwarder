@@ -10,7 +10,7 @@ resource "random_id" "uniq" {
 locals {
   crwd_logs_bucket_name        = (length(var.logs_bucket_name) > 0 ? var.logs_bucket_name : "${var.prefix}-fdr-logs-bucket-${random_id.uniq.hex}")
   lambda_code_bucket_name        = (length(var.lambda_bucket_name) > 0 ? var.lambda_bucket_name : "${var.prefix}-lambda-code-bucket-${random_id.uniq.hex}")
-  iam_role_name = length(var.iam_role_name) > 0 ? var.iam_role_name : "avl-lambda-iam-${random_id.uniq.hex}"
+  lambda_iam_role_name = length(var.lambda_iam_role_name) > 0 ? var.lambda_iam_role_name : "avl-lambda-iam-${random_id.uniq.hex}"
 }
 
 resource "aws_s3_bucket" "crwd-logs" {
@@ -61,7 +61,7 @@ resource "aws_secretsmanager_secret_version" "crwd-access-keys" {
 }
 
 resource "aws_iam_role" "lambda_iam_role" {
-  name               = local.iam_role_name
+  name               = local.lambda_iam_role_name
   assume_role_policy = jsonencode({
     "Version": "2012-10-17",
     "Statement": [{

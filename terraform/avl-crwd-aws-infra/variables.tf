@@ -28,7 +28,7 @@ variable "snowpipe_sqs_queue_arn" {
   description = "Value to specify arn for the SQS queue for the Snowpipe."
 }
 
-variable "iam_role_name" {
+variable "lambda_iam_role_name" {
   type        = string
   default     = ""
   description = "Optional name for the IAM role for lambda function"

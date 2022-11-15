@@ -62,22 +62,10 @@ variable "identity_task_schedule" {
   description = "Cron Schedule for identity task"
 }
 
-variable "processrollup_task_enabled" {
+variable "tasks_enabled" {
   type        = bool
   default = false
-  description = "Whether to enable the processrollup task"
-}
-
-variable "asset_task_enabled" {
-  type        = bool
-  default = false
-  description = "Whether to enable the asset task"
-}
-
-variable "identity_task_enabled" {
-  type        = bool
-  default = false
-  description = "Whether to enable the identity task"
+  description = "Whether to enable all tasks"
 }
 
 variable "false_value" {
