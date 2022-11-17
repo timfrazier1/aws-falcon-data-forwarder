@@ -19,7 +19,7 @@ The above lambda function receives SQS message(s) from Crowdstrike Falcon Data R
 The remainder of the architecture consists of AWS and Snowflake infrastructure and is built out via Terraform. 
 
 
-## Installing in AWS Cloud Shell
+## Installing in AWS Cloud Shell via Terraform
 
 - Clone this repo to your Cloudshell home directory: `git clone https://github.com/timfrazier1/aws-falcon-data-forwarder.git `
 
@@ -60,7 +60,10 @@ ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_ASSET resume;
 ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_PROCESSROLLUP resume;
 ```
 
-# Manual Installation Instructions
+
+# Old Manual Installation Instructions
+
+If you use the above Terraform instructions, you do not need to do any of the below items.  The automation handles this for you. 
 
 ## Prerequisites
 
@@ -76,13 +79,6 @@ ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_PROCESSROLLUP resume;
     - s3::PutObject for `my-log-bucket`
     - secretsmanager:GetSecretValue
 
-Make sure that you need CrowdStrike Falcon and Data Replicator service.
-
-### Terraform option for prerequisites
-If you would prefer to use Terraform to build the prerequisite infrastructure, you can use the files in the 'terraform' folder to do this in an automated way. 
--  You will need a `terraform.tfvars` file with your values. The easiest way is to make a copy of `terraform.tfvars.example` and name it `terraform.tfvars`, then modify the values. Some of the values you will need to fill in after you have set up the Snowflake integration and pipe. 
-- As long as you have terraform in your CLI environment, you can simply run `terraform init` to get the necessary providers, then `terraform apply` to build the infrastructure.  Once you get the necessary values from the Snowflake side, simply modify the `terraform.tfvars` file and re-run `terraform apply`. 
-- If you are unfamiliar with terraform, it is recommended to build the above prerequisite infrastructure manually using the AWS console.  
 
 ## Setup
 
