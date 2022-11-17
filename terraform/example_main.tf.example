@@ -74,7 +74,7 @@ module "avl-crwd-snowflake" {
   processrollup_task_schedule = "using cron */5 * * * * America/Los_Angeles"
   asset_task_schedule = "using cron */5 * * * * America/Los_Angeles"
   identity_task_schedule = "using cron */5 * * * * America/Los_Angeles"
-  tasks_enabled = true
+  tasks_enabled = false
 }
 
 output "Snowpipe_SQS" {

@@ -35,7 +35,6 @@ use role accountadmin;
 
 CREATE USER "tf-snow" RSA_PUBLIC_KEY='<YOUR PUBLIC KEY - WITHOUT HEADER AND FOOTER - GOES HERE>' DEFAULT_ROLE=PUBLIC MUST_CHANGE_PASSWORD=FALSE;
 
-GRANT ROLE SYSADMIN TO USER "tf-snow";
 GRANT ROLE SECURITYADMIN TO USER "tf-snow";
 GRANT ROLE ACCOUNTADMIN TO USER "tf-snow";
 
@@ -50,7 +49,16 @@ SELECT current_account() as YOUR_ACCOUNT_LOCATOR, current_region() as YOUR_SNOWF
 - After the first run, look for the output called `Snowpipe_SQS`.  Copy the value for this ARN and paste it into your `terraform/main.tf` file for the variable `snowpipe_sqs_queue_arn` and uncomment that line. 
 - Re-run terraform apply with this command: `terraform -chdir=terraform apply`
 
+- Back in Snowflake, run the following commands:
+```
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_IDENTITY set error_on_nondeterministic_merge = false;
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_ASSET set error_on_nondeterministic_merge = false;
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_PROCESSROLLUP set error_on_nondeterministic_merge = false;
 
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_IDENTITY resume;
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_ASSET resume;
+ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_PROCESSROLLUP resume;
+```
 
 # Manual Installation Instructions
 

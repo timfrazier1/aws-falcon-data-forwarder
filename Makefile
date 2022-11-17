@@ -13,7 +13,9 @@ apply: init		## Apply the changes in plan.
 
  ## AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
 
-output: apply 		## See the output and put into the newconfig file.
+output: 
+    terraform -chdir=terraform output
+make_config: apply		## See the output and put into the newconfig file.
 	@jq '.RoleArn = $(shell terraform -chdir=terraform output RoleArn)' ./baseconfig.json > tmp 
 	@cat tmp > newconfig.json
 	@jq '.CodeS3Bucket = $(shell terraform -chdir=terraform output CodeS3Bucket)' ./newconfig.json > tmp
@@ -27,9 +29,9 @@ output: apply 		## See the output and put into the newconfig file.
 destroy: 	## Destroy Infrastructure built with Terraform.
 	terraform -chdir=terraform destroy
 	rm -f sam.yml
-	aws cloudformation delete-stack --stack-name $(shell ./build/helper get StackName)
+	aws cloudformation delete-stack --stack-name $(shell ./build/helper get StackName) --region $(shell ./build/helper get Region)
 
-build/helper: helper/*.go output
+build/helper: helper/*.go make_config
 	go build -o build/helper ./helper/
 
 build/main: ./*.go
