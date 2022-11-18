@@ -19,6 +19,11 @@ output "S3Bucket" {
   description = "CRWD Log bucket Name"
 }
 
+output "S3BucketArn" {
+  value       = aws_s3_bucket.crwd-logs.arn
+  description = "CRWD Log bucket ARN"
+}
+
 output "CodeS3Bucket" {
   value       = aws_s3_bucket.lambda-code.bucket
   description = "Lambda Code bucket Name"

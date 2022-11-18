@@ -1,0 +1,103 @@
+# Main Terraform file that leverages 3 separate modules to deploy all required infrastructure
+provider "aws" {
+  region = "us-east-2"
+}
+
+provider "snowflake" {
+  alias = "security_admin"
+  role  = "SECURITYADMIN"
+  region = var.snowflake_region
+}
+
+provider "snowflake" {
+  alias = "account_admin"
+  role  = "ACCOUNTADMIN"
+  region = var.snowflake_region
+}
+
+variable "snowflake_region" {
+  type        = string
+  default     = "us-east-2.aws"
+  description = "Snowflake Region for connecting to Snowflake account"
+}
+
+module "avl-crwd-aws-infra" {
+  source = "./avl-crwd-aws-infra"
+
+  aws_region = "us-west-2"
+  storage_aws_external_id = module.avl-snowflake-setup.snowflake_storage_integration_external_id
+  storage_aws_iam_user_arn = module.avl-snowflake-setup.snowflake_storage_integration_iam_user
+  # snowpipe_sqs_queue_arn = "arn:aws:sqs:us-west-2:123136348924:sf-snowpipe-<You will be changing this after first run>"
+  
+  secret_map = {
+    falcon_aws_key = "<Insert Crowdstrike Provided AWS ACCESS KEY>"
+    falcon_aws_secret = "<Insert Crowdstrike Provided AWS SECRET KEY>"
+  }
+}
+
+module "avl-snowflake-setup" {
+  source = "./avl-snowflake-setup"
+  providers = {
+    snowflake.security_admin = snowflake.security_admin
+    snowflake.account_admin = snowflake.account_admin
+   }
+
+  data_bucket_arns = [module.avl-crwd-aws-infra.S3BucketArn]
+  #storage_integration_name = "AVL_S3_INT_TEST"
+  #db_name = "ANVILOGIC_DEMO"
+  # iam_role_name = "avl-snowflake-integration-test-role"
+  #staging_schema_name = "EXTERNAL_STAGING_DEMO"
+  #data_source_schema_name = "DATA_SOURCES_DEMO"
+  #task_warehouse_name = "ANVILOGIC_TASKS_DEMO"
+  #detect_warehouse_name = "ANVILOGIC_DETECT_DEMO"
+  #avl_role_name = "AVL_SNOWFLAKE_SPLUNK_DEMO"
+  #avl_user_name = "AVL_SVCSPLUNK_DEMO"
+}
+
+module "avl-crwd-snowflake" {
+  source = "./avl-crwd-snowflake"
+  depends_on = [
+    module.avl-snowflake-setup
+  ]
+  providers = {
+    snowflake.security_admin = snowflake.security_admin
+    snowflake.account_admin = snowflake.account_admin
+   }
+
+  anvilogic_db_name       = module.avl-snowflake-setup.snowflake_anvilogic_db_name
+  staging_schema_name    = module.avl-snowflake-setup.snowflake_anvilogic_staging_schema_name
+  data_source_schema_name = module.avl-snowflake-setup.snowflake_anvilogic_data_source_schema_name
+  avl_role_name = module.avl-snowflake-setup.snowflake_anvilogic_role_name
+  s3_integration_name = module.avl-snowflake-setup.s3_storage_integration_name
+  crwd_log_bucket_name = module.avl-crwd-aws-infra.S3Bucket
+  task_warehouse_name = module.avl-snowflake-setup.task_warehouse_name
+  processrollup_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  asset_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  identity_task_schedule = "using cron */5 * * * * America/Los_Angeles"
+  tasks_enabled = false
+}
+
+output "Snowpipe_SQS" {
+  value = module.avl-crwd-snowflake.snowflake_pipe_crowdstrike_fdr_pipe_sqs
+  description = "SQS Queue for Snowpipe"
+}
+
+output "S3Bucket" {
+  value       = module.avl-crwd-aws-infra.S3Bucket
+  description = "CRWD Log bucket Name"
+}
+
+output "RoleArn" {
+  value       = module.avl-crwd-aws-infra.RoleArn
+  description = "Lambda IAM Role ARN"
+}
+
+output "CodeS3Bucket" {
+  value       = module.avl-crwd-aws-infra.CodeS3Bucket
+  description = "Lambda Code bucket Name"
+}
+
+output "SecretArn" {
+  value = module.avl-crwd-aws-infra.SecretArn
+  description = "Crowdstrike secrets ARN"
+}

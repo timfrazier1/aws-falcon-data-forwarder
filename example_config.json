@@ -1,0 +1,13 @@
+{
+  "StackName": "falcon-data-forwarder-staging",
+  "Region": "us-west-2",
+  "SqsURL": "https://sqs.us-west-2.amazonaws.com/<insert remainder of SQS URL & validate region>",
+  "FalconRegion": "us-west-2",
+  "S3Region": "us-west-2",
+  "CodeS3Prefix": "functions",
+  "S3Prefix": "logs/",
+  "CodeS3Bucket": "<insert>",
+  "RoleArn": "<insert>",
+  "S3Bucket": "<insert>",
+  "SecretArn": "<insert>"
+}

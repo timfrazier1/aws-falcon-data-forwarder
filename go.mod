@@ -1,5 +1,7 @@
 module github.com/m-mizutani/aws-falcon-data-forwarder
 
+go 1.19
+
 require (
 	github.com/aws/aws-lambda-go v1.8.2
 	github.com/aws/aws-sdk-go v1.16.32
@@ -12,6 +14,11 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.3.0
 	github.com/stretchr/testify v1.3.0
+)
+
+require (
+	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
+	github.com/stretchr/objx v0.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20190211182817-74369b46fc67 // indirect
-	golang.org/x/sys v0.0.0-20190209173611-3b5209105503 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
