@@ -21,11 +21,14 @@ The remainder of the architecture consists of AWS and Snowflake infrastructure a
 
 ## Installing in AWS Cloud Shell via Terraform
 
+- Open a new AWS Cloudshell window in your AWS account where you want this infrastructure stood up. 
 - Clone this repo to your Cloudshell home directory: `git clone https://github.com/timfrazier1/aws-falcon-data-forwarder.git `
+
+- Change directory to the newly cloned repo: `cd aws-falcon-data-forwarder`
 
 - Run the setup script: `./cloudshell_setup.sh `
 
-- Substitute your public key from the above script into the commands below and run in your Snowflake environment: 
+- Substitute your public key from the above script (WITHOUT the "BEGIN PUBLIC KEY" and "END PUBLIC KEY" banners) into the commands below and run in your Snowflake environment: 
 
 ```
 -- Snowflake instructions for pulling Crowdstrike FDR data from S3 and preparing for Anvilogic
@@ -41,14 +44,18 @@ GRANT ROLE ACCOUNTADMIN TO USER "tf-snow";
 SELECT current_account() as YOUR_ACCOUNT_LOCATOR, current_region() as YOUR_SNOWFLAKE_REGION_ID;
 ```
 
-- Look for the Account Locator and REGION ID in your output and use those values to fill out the file `snow.env` in the root of this repo.  Make sure you use the [Region reference table](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#region-ids) to find the right region identifier to use. 
+- Look at the output of the last command for the Account Locator (this is the SNOWFLAKE_ACCOUNT) and REGION ID (Translate to your aws region via the reference table).  Use those values to fill out the file `snow.env` in the root of this repo.  Make sure you use the [Region reference table](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#region-ids) to find the right region identifier to use. 
+
 - Run `source snow.env` to bring those variables into your environment
-- Update the `example_config.json` file with your Crowdstrike provided SQS queue and the appropriate regions. Move/copy `example_config.json` to a file named `baseconfig.json`
-- Rename `terraform/example_main.tf.example` to `terraform/main.tf` and substitute your Crowdstrike provided access key and secret key into the `secret_map` variable
-- Run `env FORWARDER_CONFIG=newconfig.json make deploy` and type `yes` when prompted to create infrastructure
+- Update the `example_config.json` file with your Crowdstrike provided SQS queue and the appropriate regions. (The example default is us-west-2, so change that if it's not correct for you). 
+- Move/copy `example_config.json` to a file named `baseconfig.json`
+- Rename `terraform/example_main.tf.example` to `terraform/main.tf` 
+- Edit your `terraform/main.tf` and substitute your Crowdstrike provided access key and secret key into the `secret_map` variable
+- Run `env FORWARDER_CONFIG=newconfig.json make deploy`.  This will install some go dependencies and the run Terraform to build infrastructure. 
+- Type `yes` when prompted to create the infrastructure. 
 - After the first run, look for the output called `Snowpipe_SQS`.  Copy the value for this ARN and paste it into your `terraform/main.tf` file for the variable `snowpipe_sqs_queue_arn` and uncomment that line. 
 - Re-run terraform apply with this command: `terraform -chdir=terraform apply`
-
+- Type `yes` when prompted. 
 - Back in Snowflake, run the following commands:
 ```
 ALTER TASK ANVILOGIC.EXTERNAL_STAGING.CROWDSTRIKE_FDR_TASK_IDENTITY set error_on_nondeterministic_merge = false;

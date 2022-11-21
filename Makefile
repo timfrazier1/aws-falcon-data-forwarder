@@ -14,7 +14,8 @@ apply: init		## Apply the changes in plan.
  ## AWS_PROFILE=${AWS_PROFILE} terraform -chdir=terraform output -json | jq 'keys[] as $$k | "\($$k):\(.[$$k] | .value)"' | sed 's/:/": "/' | sed '$$!s/$$/,/'
 
 output: 
-    terraform -chdir=terraform output
+	terraform -chdir=terraform output
+
 make_config: apply		## See the output and put into the newconfig file.
 	@jq '.RoleArn = $(shell terraform -chdir=terraform output RoleArn)' ./baseconfig.json > tmp 
 	@cat tmp > newconfig.json
